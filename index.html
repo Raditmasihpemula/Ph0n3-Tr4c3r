@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Demo Lokasi Saya + Supabase</title>
+</head>
+<body>
+  <h1>Demo Lokasi Saya</h1>
+  <p>
+    Halaman ini akan meminta izin lokasi dari browser dan menyimpannya ke database
+    Supabase milik saya sendiri.
+  </p>
+  <button id="btn">Kirim Lokasi ke Supabase</button>
+
+  <pre id="status"></pre>
+
+  <!-- Supabase JS via CDN -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script>
+    const statusEl = document.getElementById("status");
+    const button = document.getElementById("btn");
+
+    function log(msg) {
+      statusEl.textContent += msg + "\n";
+    }
+
+    // PAKAI PUNYA KAMU
+    const SUPABASE_URL = "https://yfwnfaocsswqerhgxkto.supabase.co";
+    const SUPABASE_ANON_KEY = "EY_JANGAN_LUPA_PASTE_ANON_KEY_KAMU_DI_SINI";
+
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function sendLocation() {
+      if (!navigator.geolocation) {
+        log("Geolocation tidak didukung di browser ini.");
+        return;
+      }
+
+      log("Meminta izin lokasi...");
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const payload = {
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            created_at: new Date().toISOString(), // optional, bisa pakai default now()
+            user_agent: navigator.userAgent
+          };
+
+          log("Lokasi didapat:");
+          log(JSON.stringify(payload, null, 2));
+          log("Menyimpan ke Supabase...");
+
+          const { data, error } = await client
+            .from("locations")
+            .insert(payload)
+            .select();
+
+          if (error) {
+            log("Gagal simpan ke Supabase: " + error.message);
+          } else {
+            log("Berhasil simpan. Row:");
+            log(JSON.stringify(data, null, 2));
+          }
+        },
+        (err) => {
+          log("Gagal ambil lokasi: " + err.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    button.addEventListener("click", sendLocation);
+  </script>
+</body>
+</html>
