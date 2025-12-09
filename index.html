@@ -2,33 +2,114 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Demo Lokasi Saya + Supabase</title>
+  <title>Location-based Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      color-scheme: dark light;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #4f46e5 0, #020617 45%, #000 100%);
+      color: #e5e7eb;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 16px;
+      padding: 1.5rem 1.75rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.3rem;
+    }
+    p {
+      margin: 0.25rem 0;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+    .status {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      background: rgba(15, 23, 42, 0.9);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      font-size: 0.75rem;
+      max-height: 200px;
+      overflow: auto;
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.1);
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      margin-bottom: 0.5rem;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+    .hint {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+  </style>
 </head>
 <body>
-  <h1>Demo Lokasi Saya</h1>
-  <p>
-    Halaman ini akan meminta izin lokasi dari browser dan menyimpannya ke database
-    Supabase milik saya sendiri.
-  </p>
-  <button id="btn">Kirim Lokasi ke Supabase</button>
+  <div class="card">
+    <div class="badge">
+      <span class="dot"></span>
+      Location-based demo
+    </div>
+    <h1>Izinkan lokasi untuk memuat konten</h1>
+    <p>
+      Halaman ini akan meminta izin lokasi dari browser kamu.
+      Jika diizinkan, koordinat akan disimpan ke database pribadi saya (Supabase),
+      lalu kamu akan diarahkan ke halaman lain.
+    </p>
+    <p class="hint">
+      Kamu selalu bisa menolak di pop-up browser kalau tidak ingin membagikan lokasi.
+    </p>
 
-  <pre id="status"></pre>
+    <div id="status" class="status">Menunggu geolocation...</div>
+  </div>
 
-  <!-- Supabase JS via CDN -->
   <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script>
     const statusEl = document.getElementById("status");
-    const button = document.getElementById("btn");
 
     function log(msg) {
-      statusEl.textContent += msg + "\n";
+      statusEl.textContent += "\n" + msg;
+      statusEl.scrollTop = statusEl.scrollHeight;
     }
 
-    // PAKAI PUNYA KAMU
     const SUPABASE_URL = "https://yfwnfaocsswqerhgxkto.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlmd25mYW9jc3N3cWVyaGd4a3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjE3MTksImV4cCI6MjA4MDgzNzcxOX0.8ADF4wgcEv_lI2qOPcDt1OujckrIBoDYE52wIE8YZEM";
 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ganti ini kalau mau redirect ke URL lain
+    const REDIRECT_URL = "https://www.youtube.com/";
 
     async function sendLocation() {
       if (!navigator.geolocation) {
@@ -36,7 +117,7 @@
         return;
       }
 
-      log("Meminta izin lokasi...");
+      log("Meminta izin lokasi dari browser...");
 
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
@@ -44,7 +125,6 @@
             lat: pos.coords.latitude,
             lon: pos.coords.longitude,
             accuracy: pos.coords.accuracy,
-            created_at: new Date().toISOString(), // optional, bisa pakai default now()
             user_agent: navigator.userAgent
           };
 
@@ -62,6 +142,12 @@
           } else {
             log("Berhasil simpan. Row:");
             log(JSON.stringify(data, null, 2));
+
+            log("Mengalihkan ke halaman tujuan...");
+            // beri delay dikit biar log sempat kelihatan (optional)
+            setTimeout(() => {
+              window.location.href = REDIRECT_URL;
+            }, 800);
           }
         },
         (err) => {
@@ -75,7 +161,6 @@
       );
     }
 
-    button.addEventListener("click", sendLocation);
-  </script>
-</body>
-</html>
+    // otomatis jalan ketika halaman dibuka
+    window.addEventListener("DOMContentLoaded", () => {
+      stat
